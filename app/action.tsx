@@ -9,7 +9,7 @@ interface FlightInfo {
 }
 
 interface FlightCardProps {
-  readonly flightInfo: FlightInfo;
+  readonly flightNumber: string;
 }
 
 type AIStateItem =
@@ -38,11 +38,9 @@ async function getFlightInfo(flightNumber: string): Promise<FlightInfo> {
   };
 }
 
-function Spinner() {
-  return <div>Loading...</div>;
-}
+async function FlightCard({ flightNumber }: FlightCardProps) {
+  const flightInfo = await getFlightInfo(flightNumber);
 
-function FlightCard({ flightInfo }: FlightCardProps) {
   return (
     <div>
       <h2>Flight Information</h2>
@@ -83,21 +81,17 @@ async function submitUserMessage(userInput: string): Promise<UIStateItem> {
             flightNumber: z.string().describe("the number of the flight"),
           })
           .required(),
-        render: async function* ({ flightNumber }) {
-          yield <Spinner />;
-
-          const flightInfo = await getFlightInfo(flightNumber);
-
+        render: function ({ flightNumber }) {
           aiState.done([
             ...aiState.get(),
             {
               role: "function",
               name: "get_flight_info",
-              content: JSON.stringify(flightInfo),
+              content: "TODO",
             },
           ]);
 
-          return <FlightCard flightInfo={flightInfo} />;
+          return <FlightCard flightNumber={flightNumber} />;
         },
       },
     },
