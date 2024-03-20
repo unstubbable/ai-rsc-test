@@ -31,6 +31,8 @@ interface UIStateItem {
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 async function getFlightInfo(flightNumber: string): Promise<FlightInfo> {
+  await new Promise((resolve) => setTimeout(resolve, 100));
+
   return {
     flightNumber,
     departure: "New York",
