@@ -1,6 +1,7 @@
 import { OpenAI } from "openai";
 import { createAI, getMutableAIState, render } from "ai/rsc";
 import { z } from "zod";
+import { Suspense } from "react";
 
 interface FlightInfo {
   readonly flightNumber: string;
@@ -9,7 +10,7 @@ interface FlightInfo {
 }
 
 interface FlightCardProps {
-  readonly flightInfo: FlightInfo;
+  readonly flightNumber: string;
 }
 
 type AIStateItem =
@@ -31,6 +32,8 @@ interface UIStateItem {
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 async function getFlightInfo(flightNumber: string): Promise<FlightInfo> {
+  await new Promise((resolve) => setTimeout(resolve, 500));
+
   return {
     flightNumber,
     departure: "New York",
@@ -42,7 +45,9 @@ function Spinner() {
   return <div>Loading...</div>;
 }
 
-function FlightCard({ flightInfo }: FlightCardProps) {
+async function FlightCard({ flightNumber }: FlightCardProps) {
+  const flightInfo = await getFlightInfo(flightNumber);
+
   return (
     <div>
       <h2>Flight Information</h2>
@@ -83,21 +88,21 @@ async function submitUserMessage(userInput: string): Promise<UIStateItem> {
             flightNumber: z.string().describe("the number of the flight"),
           })
           .required(),
-        render: async function* ({ flightNumber }) {
-          yield <Spinner />;
-
-          const flightInfo = await getFlightInfo(flightNumber);
-
+        render: function ({ flightNumber }) {
           aiState.done([
             ...aiState.get(),
             {
               role: "function",
               name: "get_flight_info",
-              content: JSON.stringify(flightInfo),
+              content: "TODO",
             },
           ]);
 
-          return <FlightCard flightInfo={flightInfo} />;
+          return (
+            <Suspense fallback={<Spinner />}>
+              <FlightCard flightNumber={flightNumber} />
+            </Suspense>
+          );
         },
       },
     },
