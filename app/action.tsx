@@ -1,6 +1,7 @@
 import { OpenAI } from "openai";
 import { createAI, getMutableAIState, render } from "ai/rsc";
 import { z } from "zod";
+import { Suspense } from "react";
 
 interface FlightInfo {
   readonly flightNumber: string;
@@ -31,13 +32,17 @@ interface UIStateItem {
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 async function getFlightInfo(flightNumber: string): Promise<FlightInfo> {
-  await new Promise((resolve) => setTimeout(resolve, 100));
+  await new Promise((resolve) => setTimeout(resolve, 500));
 
   return {
     flightNumber,
     departure: "New York",
     arrival: "San Francisco",
   };
+}
+
+function Spinner() {
+  return <div>Loading...</div>;
 }
 
 async function FlightCard({ flightNumber }: FlightCardProps) {
@@ -93,7 +98,11 @@ async function submitUserMessage(userInput: string): Promise<UIStateItem> {
             },
           ]);
 
-          return <FlightCard flightNumber={flightNumber} />;
+          return (
+            <Suspense fallback={<Spinner />}>
+              <FlightCard flightNumber={flightNumber} />
+            </Suspense>
+          );
         },
       },
     },
